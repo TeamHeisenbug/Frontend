@@ -1,23 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fetch API Example</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Nexus Portal</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <label for="diagnosis">Enter diagnosis:</label>
-    <input
-    type="text"
-    id="diagnosis"
-    name="name"
-    required
-    minlength="4"
-    size="25" />
-    <button id="search-button" onclick="fetchData()">Search</button>
 
-    <div id="output"></div>
-    <div id="data-container">Loading...</div>
+<body>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <h1 class="site-title">NEXUS</h1>
+            <!-- <p class="site-subtitle">Fast, clear, data you can trust.</p> -->
+        </div>
+    </header>
+
+    <main class="site-content">
+        <section class="form-section">
+            <label for="diagnosis">Diagnosis Query</label>
+            <div class="input-row">
+                <input type="text" id="diagnosis" name="name" required minlength="4" placeholder="Enter diagnosis…" />
+                <button id="search-button" onclick="fetchData()">Search</button>
+            </div>
+        </section>
+
+        <section class="results-section">
+            <div class="result-block">
+                <h2>Retrieved Matches</h2>
+                <div id="output" class="result-box">No data yet</div>
+            </div>
+
+        </section>
+    </main>
+
+
+
     <script src="main.js"></script>
 </body>
+
 </html>

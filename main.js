@@ -1,61 +1,81 @@
+function showLoader(container) {
+    container.innerHTML = `
+      <div class="loader-container">
+        <div class="loader"></div>
+        <div class="loading-text">
+          Loading<span class="dots"></span>
+        </div>
+      </div>
+    `;
+
+    // animate dots smoothly
+    const dotsEl = container.querySelector(".dots");
+    let i = 0;
+    setInterval(() => {
+        i = (i + 1) % 4; // cycle through 0–3
+        dotsEl.textContent = ".".repeat(i);
+    }, 400);
+}
+
+
+
+
 async function fetchHealth() {
     const url = 'https://backend-kl02.onrender.com/health';
     const container = document.getElementById('data-container');
 
     try {
-        // Make the GET request to the specified URL
+        showLoader(container);
+
         const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
-        // Check if the response was successful (status code 200-299)
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        // Parse the JSON data from the response body
         const data = await response.json();
-
-        // Display the fetched data on the webpage
         container.innerHTML = `
-            <h2>Data Fetched Successfully:</h2>
-            <pre>${JSON.stringify(data, null, 2)}</pre>
-        `;
-        console.log('Fetched data:', data);
+      <pre>${JSON.stringify(data, null, 2)}</pre>
+    `;
+        console.log('Health data:', data);
 
     } catch (error) {
-        // Handle any errors that occurred during the fetch operation
-        container.innerHTML = `
-            <p style="color: red;">Failed to fetch data. Please check the console for details.</p>
-        `;
-        console.error('There was a problem with the fetch operation:', error);
+        container.innerHTML = `<p style="color: red; text-align:center;">Error fetching health data.</p>`;
+        console.error(error);
     }
 }
 
 async function fetchData() {
-    const diagnosis = document.getElementById('diagnosis').value;
+    const diagnosis = document.getElementById('diagnosis').value.trim();
     const container = document.getElementById('output');
-    const url = `https://backend-kl02.onrender.com/autocomplete?query=${diagnosis}`;
+
+    if (!diagnosis) {
+        container.innerHTML = `<p style="color: #EF4444; text-align:center;">Please enter a diagnosis.</p>`;
+        return;
+    }
+
     try {
-        // Make the GET request to the specified URL
+        showLoader(container);
+
+        const url = `https://backend-kl02.onrender.com/api/v1/autocomplete?query=${encodeURIComponent(diagnosis)}`;
         const response = await fetch(url);
-        // Check if the response was successful (status code 200-299)
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        // Parse the JSON data from the response body
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
         const data = await response.json();
-        // Display the fetched data on the webpage
-        container.innerHTML = `
-            <pre>${JSON.stringify(data, null, 2)}</pre>
-        `;
-        console.log('Fetched data:', data);
+        container.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        console.log('Autocomplete data:', data);
 
     } catch (error) {
-        // Handle any errors that occurred during the fetch operation
-        container.innerHTML = `
-            <p style="color: red;">Failed to fetch data. Please check the console for details.</p>
-        `;
-        console.error('There was a problem with the fetch operation:', error);
+        container.innerHTML = `<p style="color: red; text-align:center;">Error fetching autocomplete.</p>`;
+        console.error(error);
     }
 }
-// Call the function to start the fetch process
-fetchHealth();
+// attach event listener to input
+document.getElementById("diagnosis").addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+        event.preventDefault(); // prevents form submission/reload
+        fetchData(); // call your search function
+    }
+});
+
+// On load
+document.addEventListener('DOMContentLoaded', () => {
+    fetchHealth();
+});
