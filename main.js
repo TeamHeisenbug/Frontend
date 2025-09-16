@@ -58,5 +58,4 @@ async function fetchData() {
     }
 }
 // Call the function to start the fetch process
-fetchData();
 fetchHealth();
