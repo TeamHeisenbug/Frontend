@@ -185,7 +185,7 @@ function clearLoader(container) {
 }
 
 async function fetchHealth() {
-    const url = "https://backend-kl02.onrender.com/health";
+    const url = "https://backend-kl02.onrender.com/api/v1/health";
     const container = document.getElementById("output");
     try {
         showLoader(container);
@@ -231,5 +231,5 @@ document.getElementById("diagnosis").addEventListener("keydown", e => {
 document.addEventListener("DOMContentLoaded", () => {
     applyLanguage("english");
     loadTheme(); // Load theme preference on startup
-    fetchHealth();
+    // fetchHealth();
 });

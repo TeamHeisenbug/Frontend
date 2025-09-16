@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nexus Portal</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <div class="theme-toggle">
+        <button id="theme-button">
+            🌙
+        </button>
+    </div>
+
+    <div class="lang-dropdown">
+        <button class="lang-button" id="lang-button" onclick="toggleDropdown()">
+            <span class="lang-current" id="lang-current">English</span>
+            <span class="dropdown-arrow">▼</span>
+        </button>
+        <div class="lang-options" id="lang-options">
+            <div class="lang-option" onclick="selectLanguage('english')">English</div>
+            <div class="lang-option" onclick="selectLanguage('hindi')">हिंदी</div>
+            <div class="lang-option" onclick="selectLanguage('tamil')">தமிழ்</div>
+            <div class="lang-option" onclick="selectLanguage('bengali')">বাংলা</div>
+            <div class="lang-option" onclick="selectLanguage('assamese')">অসমীয়া</div>
+            <div class="lang-option" onclick="selectLanguage('malayalam')">മലയാളം</div>
+        </div>
+    </div>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <h1 class="site-title" id="site-title">NEXUS</h1>
+        </div>
+    </header>
+
+    <main class="site-content">
+        <section class="form-section">
+            <label for="diagnosis" id="diagnosis-label">Diagnosis Query</label>
+            <div class="input-row">
+                <input type="text" id="diagnosis" required minlength="4" placeholder="Enter diagnosis…" />
+                <button id="search-button" onclick="fetchData()">Search</button>
+            </div>
+        </section>
+
+        <section class="results-section">
+            <div class="result-block">
+                <h2 id="retrieved-matches">Retrieved Matches</h2>
+                <div id="output" class="result-box">No data yet</div>
+            </div>
+        </section>
+    </main>
+
+    <script src="main.js"></script>
+</body>
+
+</html>
