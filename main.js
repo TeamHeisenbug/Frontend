@@ -255,7 +255,7 @@ async function fetchHealth() {
     }
 }
 
-// small helper to escape HTML for safe table rendering
+// Small helper to escape HTML for safe table rendering
 function escapeHtml(s) {
     if (s === null || s === undefined) return "-";
     return String(s).replace(/[&<>"']/g, function (m) {
@@ -344,6 +344,7 @@ async function fetchData() {
 function extractConcepts(data) {
     if (!data) return [];
 
+    // If server returned an array of CodeSystems
     if (Array.isArray(data)) {
         return data.reduce((acc, item) => {
             const c = item && item.concept;
@@ -352,16 +353,16 @@ function extractConcepts(data) {
         }, []);
     }
 
+    // If server returned a single CodeSystem object with concept array
     if (Array.isArray(data.concept)) return data.concept;
 
     return [];
 }
 
-/* ====== fetchCodeSystem - safe version (code, display, valueString) ====== */
+/* ====== Enhanced fetchCodeSystem with Excel-like table ====== */
 async function fetchCodeSystem() {
     const diagnosis = document.getElementById("diagnosis").value.trim();
     const container = document.getElementById("output");
-    const tableView = document.getElementById("table-view") && document.getElementById("table-view").checked;
 
     if (!diagnosis) {
         container.innerHTML = `<p style="color:red; text-align:center;">Please enter a size.</p>`;
@@ -382,43 +383,61 @@ async function fetchCodeSystem() {
             throw new Error("Non-JSON response from server: " + text.slice(0, 100));
         }
 
-
         clearLoader(container);
 
         const concepts = extractConcepts(data); // safe extraction
 
-        if (tableView && concepts.length > 0) {
+        if (concepts.length > 0) {
+            // Create Excel-like table with enhanced styling
             let tableHTML = `
-        <table class="table-result clean-table">
-          <thead>
-            <tr>
-              <th>Code</th>
-              <th>Display</th>
-              <th>Value String</th>
-            </tr>
-          </thead>
-          <tbody>
-      `;
+                <div class="excel-table-container">
+                    <table class="excel-table">
+                        <thead>
+                            <tr>
+                                <th class="excel-header">Code</th>
+                                <th class="excel-header">Display</th>
+                                <th class="excel-header">Value String</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
 
-            concepts.forEach(item => {
-                // valueString stored in item.property array (property.code === "type")
+            concepts.forEach((item, index) => {
                 const code = escapeHtml(item.code || "-");
                 const display = escapeHtml(item.display || "-");
+
+                // Extract valueString from property array where code === "type"
                 let valueString = "-";
                 if (Array.isArray(item.property)) {
-                    const p = item.property.find(pp => pp && pp.code === "type");
-                    if (p && p.valueString) valueString = p.valueString;
+                    const typeProperty = item.property.find(prop => prop && prop.code === "type");
+                    if (typeProperty && typeProperty.valueString) {
+                        valueString = typeProperty.valueString;
+                    }
                 }
                 valueString = escapeHtml(valueString);
 
-                tableHTML += `<tr><td>${code}</td><td>${display}</td><td>${valueString}</td></tr>`;
+                const rowClass = index % 2 === 0 ? 'excel-row-even' : 'excel-row-odd';
+                tableHTML += `
+                    <tr class="${rowClass}">
+                        <td class="excel-cell">${code}</td>
+                        <td class="excel-cell">${display}</td>
+                        <td class="excel-cell">${valueString}</td>
+                    </tr>
+                `;
             });
 
-            tableHTML += `</tbody></table>`;
+            tableHTML += `
+                        </tbody>
+                    </table>
+                </div>
+                <div class="table-info">
+                    <p>Total records: ${concepts.length}</p>
+                </div>
+            `;
+
             container.innerHTML = tableHTML;
         } else {
-            // fallback: pretty-print raw JSON
-            container.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            container.innerHTML = `<p style="text-align:center; color: #666;">No concepts found in the response.</p>`;
         }
     } catch (err) {
         clearLoader(container);
@@ -426,14 +445,16 @@ async function fetchCodeSystem() {
     }
 }
 
-
-
-
-// enter key shortcut
+// Enter key shortcut for both functions
 document.getElementById("diagnosis").addEventListener("keydown", e => {
     if (e.key === "Enter") {
         e.preventDefault();
-        fetchData();
+        // Determine which function to call based on current page
+        if (window.location.pathname.includes("codesystem.html")) {
+            fetchCodeSystem();
+        } else {
+            fetchData();
+        }
     }
 });
 
