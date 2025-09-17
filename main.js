@@ -255,6 +255,63 @@ async function fetchHealth() {
     }
 }
 
+async function fetchCodeSystem() {
+    const diagnosis = document.getElementById("diagnosis").value.trim();
+    const container = document.getElementById("output");
+    const tableView = document.getElementById("table-view").checked;
+
+    if (!diagnosis) {
+        container.innerHTML = `<p style="color:red; text-align:center;">Please enter a diagnosis.</p>`;
+        return;
+    }
+
+    try {
+        showLoader(container);
+        const url = `https://backend-kl02.onrender.com/api/v1/codesystem/namaste?size=${encodeURIComponent(
+            diagnosis
+        )}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        clearLoader(container);
+
+        const contains = data.flatMap(item => item.expansion?.contains || []);
+
+        if (tableView && contains.length > 0) {
+            let tableHTML = `
+        <table class="table-result clean-table">
+          <thead>
+            <tr>
+              <th>System</th>
+              <th>Code</th>
+              <th>Display</th>
+              <th>Source</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+            contains.forEach(item => {
+                tableHTML += `
+          <tr>
+            <td>${item.system || "-"}</td>
+            <td>${item.code || "-"}</td>
+            <td>${item.display || "-"}</td>
+            <td>${item.extension?.valueString || "-"}</td>
+          </tr>
+        `;
+            });
+
+            tableHTML += "</tbody></table>";
+            container.innerHTML = tableHTML;
+        } else {
+            // fallback: pretty-print raw JSON
+            container.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        }
+    } catch (err) {
+        clearLoader(container);
+        container.innerHTML = `<p style="color:red; text-align:center;">Error: ${err.message}</p>`;
+    }
+}
 async function fetchData() {
     const diagnosis = document.getElementById("diagnosis").value.trim();
     const container = document.getElementById("output");
@@ -274,7 +331,6 @@ async function fetchData() {
         const data = await response.json();
         clearLoader(container);
 
-        // ✅ collect all rows from every expansion.contains in the array
         const contains = data.flatMap(item => item.expansion?.contains || []);
 
         if (tableView && contains.length > 0) {

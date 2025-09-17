@@ -47,7 +47,11 @@
             <label for="diagnosis" id="diagnosis-label">Number of Codes you want</label>
             <div class="input-row">
                 <input type="text" id="diagnosis" required minlength="4" placeholder="Enter Size" />
-                <button id="search-button" onclick="fetchData()">Search</button>
+                <button id="search-button" onclick="fetchCodeSystem()">Search</button>
+            </div>
+            <div class="checkbox-row">
+                <input type="checkbox" id="table-view" />
+                <label for="table-view">Table</label>
             </div>
         </section>
 
