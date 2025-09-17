@@ -255,67 +255,42 @@ async function fetchHealth() {
     }
 }
 
-async function fetchCodeSystem() {
-    const diagnosis = document.getElementById("diagnosis").value.trim();
-    const container = document.getElementById("output");
-    const tableView = document.getElementById("table-view").checked;
-
-    if (!diagnosis) {
-        container.innerHTML = `<p style="color:red; text-align:center;">Please enter a diagnosis.</p>`;
-        return;
-    }
-
-    try {
-        showLoader(container);
-        const url = `https://backend-kl02.onrender.com/api/v1/codesystem/namaste?size=${encodeURIComponent(
-            diagnosis
-        )}`;
-        const response = await fetch(url);
-        const data = await response.json();
-        clearLoader(container);
-
-        const contains = data.flatMap(item => item.expansion?.contains || []);
-
-        if (tableView && contains.length > 0) {
-            let tableHTML = `
-        <table class="table-result clean-table">
-          <thead>
-            <tr>
-              <th>System</th>
-              <th>Code</th>
-              <th>Display</th>
-              <th>Source</th>
-            </tr>
-          </thead>
-          <tbody>
-      `;
-
-            contains.forEach(item => {
-                tableHTML += `
-          <tr>
-            <td>${item.system || "-"}</td>
-            <td>${item.code || "-"}</td>
-            <td>${item.display || "-"}</td>
-            <td>${item.extension?.valueString || "-"}</td>
-          </tr>
-        `;
-            });
-
-            tableHTML += "</tbody></table>";
-            container.innerHTML = tableHTML;
-        } else {
-            // fallback: pretty-print raw JSON
-            container.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
-        }
-    } catch (err) {
-        clearLoader(container);
-        container.innerHTML = `<p style="color:red; text-align:center;">Error: ${err.message}</p>`;
-    }
+// small helper to escape HTML for safe table rendering
+function escapeHtml(s) {
+    if (s === null || s === undefined) return "-";
+    return String(s).replace(/[&<>"']/g, function (m) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m];
+    });
 }
+
+/* ====== Safe extractor for `expansion.contains` (autocomplete response) ====== */
+function extractContains(data) {
+    if (!data) return [];
+
+    // If server returned an array of bundles/valuesets
+    if (Array.isArray(data)) {
+        return data.reduce((acc, item) => {
+            const c = item && item.expansion && item.expansion.contains;
+            if (Array.isArray(c)) acc.push(...c);
+            return acc;
+        }, []);
+    }
+
+    // If server returned a single object with expansion.contains
+    const c = data.expansion && data.expansion.contains;
+    if (Array.isArray(c)) return c;
+
+    // fallback: if there is a top-level contains field (rare)
+    if (Array.isArray(data.contains)) return data.contains;
+
+    return [];
+}
+
+/* ====== fetchData (autocomplete) - safe version ====== */
 async function fetchData() {
     const diagnosis = document.getElementById("diagnosis").value.trim();
     const container = document.getElementById("output");
-    const tableView = document.getElementById("table-view").checked;
+    const tableView = document.getElementById("table-view") && document.getElementById("table-view").checked;
 
     if (!diagnosis) {
         container.innerHTML = `<p style="color:red; text-align:center;">Please enter a diagnosis.</p>`;
@@ -324,41 +299,36 @@ async function fetchData() {
 
     try {
         showLoader(container);
-        const url = `https://backend-kl02.onrender.com/api/v1/autocomplete?query=${encodeURIComponent(
-            diagnosis
-        )}`;
+        const url = `https://backend-kl02.onrender.com/api/v1/autocomplete?query=${encodeURIComponent(diagnosis)}`;
         const response = await fetch(url);
         const data = await response.json();
         clearLoader(container);
 
-        const contains = data.flatMap(item => item.expansion?.contains || []);
+        const contains = extractContains(data); // safe extraction
 
         if (tableView && contains.length > 0) {
             let tableHTML = `
         <table class="table-result clean-table">
           <thead>
             <tr>
-              <th>System</th>
               <th>Code</th>
               <th>Display</th>
-              <th>Source</th>
+              <th>Value String</th>
             </tr>
           </thead>
           <tbody>
       `;
 
             contains.forEach(item => {
-                tableHTML += `
-          <tr>
-            <td>${item.system || "-"}</td>
-            <td>${item.code || "-"}</td>
-            <td>${item.display || "-"}</td>
-            <td>${item.extension?.valueString || "-"}</td>
-          </tr>
-        `;
+                // valueString is inside extension.valueString in your autocomplete examples
+                const code = escapeHtml(item.code || "-");
+                const display = escapeHtml(item.display || "-");
+                const valueString = escapeHtml(item.extension && item.extension.valueString ? item.extension.valueString : "-");
+
+                tableHTML += `<tr><td>${code}</td><td>${display}</td><td>${valueString}</td></tr>`;
             });
 
-            tableHTML += "</tbody></table>";
+            tableHTML += `</tbody></table>`;
             container.innerHTML = tableHTML;
         } else {
             // fallback: pretty-print raw JSON
@@ -369,6 +339,93 @@ async function fetchData() {
         container.innerHTML = `<p style="color:red; text-align:center;">Error: ${err.message}</p>`;
     }
 }
+
+/* ====== Safe extractor for `concept` (codesystem response) ====== */
+function extractConcepts(data) {
+    if (!data) return [];
+
+    if (Array.isArray(data)) {
+        return data.reduce((acc, item) => {
+            const c = item && item.concept;
+            if (Array.isArray(c)) acc.push(...c);
+            return acc;
+        }, []);
+    }
+
+    if (Array.isArray(data.concept)) return data.concept;
+
+    return [];
+}
+
+/* ====== fetchCodeSystem - safe version (code, display, valueString) ====== */
+async function fetchCodeSystem() {
+    const diagnosis = document.getElementById("diagnosis").value.trim();
+    const container = document.getElementById("output");
+    const tableView = document.getElementById("table-view") && document.getElementById("table-view").checked;
+
+    if (!diagnosis) {
+        container.innerHTML = `<p style="color:red; text-align:center;">Please enter a size.</p>`;
+        return;
+    }
+
+    try {
+        showLoader(container);
+        const url = `https://backend-kl02.onrender.com/api/v1/codesystem/namaste?size=${encodeURIComponent(diagnosis)}`;
+        const response = await fetch(url);
+        const contentType = response.headers.get("content-type");
+
+        let data;
+        if (contentType && contentType.includes("application/json")) {
+            data = await response.json();
+        } else {
+            const text = await response.text();
+            throw new Error("Non-JSON response from server: " + text.slice(0, 100));
+        }
+
+
+        clearLoader(container);
+
+        const concepts = extractConcepts(data); // safe extraction
+
+        if (tableView && concepts.length > 0) {
+            let tableHTML = `
+        <table class="table-result clean-table">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Display</th>
+              <th>Value String</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+            concepts.forEach(item => {
+                // valueString stored in item.property array (property.code === "type")
+                const code = escapeHtml(item.code || "-");
+                const display = escapeHtml(item.display || "-");
+                let valueString = "-";
+                if (Array.isArray(item.property)) {
+                    const p = item.property.find(pp => pp && pp.code === "type");
+                    if (p && p.valueString) valueString = p.valueString;
+                }
+                valueString = escapeHtml(valueString);
+
+                tableHTML += `<tr><td>${code}</td><td>${display}</td><td>${valueString}</td></tr>`;
+            });
+
+            tableHTML += `</tbody></table>`;
+            container.innerHTML = tableHTML;
+        } else {
+            // fallback: pretty-print raw JSON
+            container.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        }
+    } catch (err) {
+        clearLoader(container);
+        container.innerHTML = `<p style="color:red; text-align:center;">Error: ${err.message}</p>`;
+    }
+}
+
 
 
 
