@@ -341,6 +341,7 @@ async function fetchData() {
 }
 
 /* ====== Safe extractor for `concept` (codesystem response) ====== */
+/* ====== Safe extractor for `concept` (codesystem response) ====== */
 function extractConcepts(data) {
     if (!data) return [];
 
@@ -359,10 +360,11 @@ function extractConcepts(data) {
     return [];
 }
 
-/* ====== Enhanced fetchCodeSystem with Excel-like table ====== */
+/* ====== fetchCodeSystem with toggle (table / raw JSON) ====== */
 async function fetchCodeSystem() {
     const diagnosis = document.getElementById("diagnosis").value.trim();
     const container = document.getElementById("output");
+    const tableView = document.getElementById("table-view")?.checked; // checkbox state
 
     if (!diagnosis) {
         container.innerHTML = `<p style="color:red; text-align:center;">Please enter a size.</p>`;
@@ -385,10 +387,10 @@ async function fetchCodeSystem() {
 
         clearLoader(container);
 
-        const concepts = extractConcepts(data); // safe extraction
+        const concepts = extractConcepts(data);
 
-        if (concepts.length > 0) {
-            // Create Excel-like table with enhanced styling
+        if (tableView && concepts.length > 0) {
+            // Show Excel-like table
             let tableHTML = `
                 <div class="excel-table-container">
                     <table class="excel-table">
@@ -437,7 +439,8 @@ async function fetchCodeSystem() {
 
             container.innerHTML = tableHTML;
         } else {
-            container.innerHTML = `<p style="text-align:center; color: #666;">No concepts found in the response.</p>`;
+            // Fallback: show raw JSON pretty-printed
+            container.innerHTML = `<pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>`;
         }
     } catch (err) {
         clearLoader(container);
@@ -445,11 +448,10 @@ async function fetchCodeSystem() {
     }
 }
 
-// Enter key shortcut for both functions
+/* ====== Enter key shortcut for both functions ====== */
 document.getElementById("diagnosis").addEventListener("keydown", e => {
     if (e.key === "Enter") {
         e.preventDefault();
-        // Determine which function to call based on current page
         if (window.location.pathname.includes("codesystem.html")) {
             fetchCodeSystem();
         } else {
@@ -458,11 +460,10 @@ document.getElementById("diagnosis").addEventListener("keydown", e => {
     }
 });
 
-// keep your theme + lang functions as before
-
-
+/* ====== On load ====== */
 document.addEventListener("DOMContentLoaded", () => {
     applyLanguage("english");
     loadTheme();
     // fetchHealth();
 });
+
