@@ -360,6 +360,92 @@ function extractConcepts(data) {
     return [];
 }
 
+async function fetchCodeIcd() {
+    const diagnosis = document.getElementById("diagnosis").value.trim();
+    const container = document.getElementById("output");
+    const tableView = document.getElementById("table-view")?.checked; // checkbox state
+
+    if (!diagnosis) {
+        container.innerHTML = `<p style="color:red; text-align:center;">Please enter a size.</p>`;
+        return;
+    }
+
+    try {
+        showLoader(container);
+        const url = `https://backend-kl02.onrender.com/api/v1/codesystem/icd?size=${encodeURIComponent(diagnosis)}`;
+        const response = await fetch(url);
+        const contentType = response.headers.get("content-type");
+
+        let data;
+        if (contentType && contentType.includes("application/json")) {
+            data = await response.json();
+        } else {
+            const text = await response.text();
+            throw new Error("Non-JSON response from server: " + text.slice(0, 100));
+        }
+
+        clearLoader(container);
+
+        const concepts = extractConcepts(data);
+
+        if (tableView && concepts.length > 0) {
+            // Show Excel-like table
+            let tableHTML = `
+                <div class="excel-table-container">
+                    <table class="excel-table">
+                        <thead>
+                            <tr>
+                                <th class="excel-header">Code</th>
+                                <th class="excel-header">Display</th>
+                                <th class="excel-header">Value String</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            concepts.forEach((item, index) => {
+                const code = escapeHtml(item.code || "-");
+                const display = escapeHtml(item.display || "-");
+
+                // Extract valueString from property array where code === "type"
+                let valueString = "-";
+                if (Array.isArray(item.property)) {
+                    const typeProperty = item.property.find(prop => prop && prop.code === "type");
+                    if (typeProperty && typeProperty.valueString) {
+                        valueString = typeProperty.valueString;
+                    }
+                }
+                valueString = escapeHtml(valueString);
+
+                const rowClass = index % 2 === 0 ? 'excel-row-even' : 'excel-row-odd';
+                tableHTML += `
+                    <tr class="${rowClass}">
+                        <td class="excel-cell">${code}</td>
+                        <td class="excel-cell">${display}</td>
+                        <td class="excel-cell">${valueString}</td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `
+                        </tbody>
+                    </table>
+                </div>
+                <div class="table-info">
+                    <p>Total records: ${concepts.length}</p>
+                </div>
+            `;
+
+            container.innerHTML = tableHTML;
+        } else {
+            // Fallback: show raw JSON pretty-printed
+            container.innerHTML = `<pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>`;
+        }
+    } catch (err) {
+        clearLoader(container);
+        container.innerHTML = `<p style="color:red; text-align:center;">Error: ${err.message}</p>`;
+    }
+}
 /* ====== fetchCodeSystem with toggle (table / raw JSON) ====== */
 async function fetchCodeSystem() {
     const diagnosis = document.getElementById("diagnosis").value.trim();
