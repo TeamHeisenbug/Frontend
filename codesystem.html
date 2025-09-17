@@ -11,7 +11,7 @@
 <body>
     <div class="theme-toggle">
         <button id="theme-button">
-            🌙
+
         </button>
     </div>
 
@@ -33,21 +33,27 @@
     <header class="site-header">
         <div class="header-inner">
             <h1 class="site-title" id="site-title">NEXUS</h1>
+            <nav class="site-nav">
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="codesystem.html" class="active">Code System</a></li>
+                </ul>
+            </nav>
         </div>
     </header>
 
     <main class="site-content">
         <section class="form-section">
-            <label for="diagnosis" id="diagnosis-label">Diagnosis Query</label>
+            <label for="diagnosis" id="diagnosis-label">Number of Codes you want</label>
             <div class="input-row">
-                <input type="text" id="diagnosis" required minlength="4" placeholder="Enter diagnosis…" />
+                <input type="text" id="diagnosis" required minlength="4" placeholder="Enter Size" />
                 <button id="search-button" onclick="fetchData()">Search</button>
             </div>
         </section>
 
         <section class="results-section">
             <div class="result-block">
-                <h2 id="retrieved-matches">Retrieved Matches</h2>
+                <h2 id="retrieved-matches">Retrieved Table</h2>
                 <div id="output" class="result-box">No data yet</div>
             </div>
         </section>

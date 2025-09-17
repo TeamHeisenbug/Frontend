@@ -10,9 +10,7 @@
 
 <body>
     <div class="theme-toggle">
-        <button id="theme-button">
-            🌙
-        </button>
+        <button id="theme-button">🌙</button>
     </div>
 
     <div class="lang-dropdown">
@@ -33,6 +31,12 @@
     <header class="site-header">
         <div class="header-inner">
             <h1 class="site-title" id="site-title">NEXUS</h1>
+            <nav class="site-nav">
+                <ul>
+                    <li><a href="index.html" class="active">Home</a></li>
+                    <li><a href="codesystem.html">Code System</a></li>
+                </ul>
+            </nav>
         </div>
     </header>
 
@@ -42,6 +46,10 @@
             <div class="input-row">
                 <input type="text" id="diagnosis" required minlength="4" placeholder="Enter diagnosis…" />
                 <button id="search-button" onclick="fetchData()">Search</button>
+            </div>
+            <div class="checkbox-row">
+                <input type="checkbox" id="table-view" />
+                <label for="table-view">Table</label>
             </div>
         </section>
 

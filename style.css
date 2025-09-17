@@ -7,10 +7,8 @@
 }
 
 /* 🚀 SCROLLBAR STYLING - LIGHT MODE */
-/* For Webkit browsers (Chrome, Safari, Edge) */
 ::-webkit-scrollbar {
     width: 8px;
-    /* makes it thin */
 }
 
 ::-webkit-scrollbar-track {
@@ -87,7 +85,7 @@ html {
     transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* New Theme Toggle Button */
+/* Theme Toggle Button */
 .theme-toggle {
     position: fixed;
     top: 20px;
@@ -125,6 +123,43 @@ html {
     font-weight: 800;
     color: var(--text-dark);
     letter-spacing: -0.02em;
+}
+
+/* Nav Bar */
+.site-nav {
+    margin-top: 20px;
+}
+
+.site-nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.site-nav a {
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.site-nav a:hover {
+    background: var(--input-bg);
+}
+
+.site-nav a.active {
+    background: rgba(37, 99, 235, 0.1);
+    color: #2563eb;
+    border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+body.dark-mode .site-nav a.active {
+    background: rgba(43, 108, 176, 0.2);
+    border: 1px solid rgba(43, 108, 176, 0.4);
 }
 
 /* Dropdown */
@@ -274,11 +309,30 @@ html {
     line-height: 1.5;
 }
 
-.result-box pre {
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    overflow-wrap: anywhere;
-    color: var(--text-primary);
+/* 🔥 Styles for the results table */
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.results-table th,
+.results-table td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    word-break: break-word;
+    /* Prevents long strings from breaking layout */
+}
+
+.results-table th {
+    background-color: var(--input-bg);
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.results-table tbody tr:hover {
+    background-color: var(--input-bg);
 }
 
 /* Loader */
@@ -303,4 +357,79 @@ html {
     text-align: center;
     font-size: 0.9rem;
     color: var(--text-primary);
+}
+
+/* Reuse your styles, adding only checkbox-row + table styles */
+
+.checkbox-row {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.table-result {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.table-result th,
+.table-result td {
+    border: 1px solid var(--border-color);
+    padding: 8px 10px;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+.table-result th {
+    background: var(--input-bg);
+    font-weight: 600;
+}
+
+.table-result tr:nth-child(even) {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+body.dark-mode .table-result th {
+    background: #374151;
+}
+
+body.dark-mode .table-result tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.clean-table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.95rem;
+    background: var(--bg-surface);
+    box-shadow: 0 0 0 1px var(--border-color);
+}
+
+.clean-table th,
+.clean-table td {
+    border: 1px solid var(--border-color);
+    padding: 10px 12px;
+    text-align: left;
+}
+
+.clean-table th {
+    background: var(--input-bg);
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.clean-table tr:nth-child(even) {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+body.dark-mode .clean-table th {
+    background: #374151;
+}
+
+body.dark-mode .clean-table tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.05);
 }
